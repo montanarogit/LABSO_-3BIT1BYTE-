@@ -41,9 +41,21 @@ public class DownloadManager {
                 break;
             }
 
-            // La risposta è l'indirizzo del peer (es. "127.0.0.1:8002")
-            String ipPeer = rispostaAggregator.split(":")[0];
-            int portaPeer = Integer.parseInt(rispostaAggregator.split(":")[1]);
+            // Controllo difensivo per evitare ArrayIndexOutOfBoundsException
+            String[] parts = rispostaAggregator.split(":");
+            if (parts.length < 2) {
+                System.out.println("Download fallito: La rilevazione non è disponibile sulla rete.");
+                break;
+            }
+
+            String ipPeer = parts[0];
+            int portaPeer;
+            try {
+                portaPeer = Integer.parseInt(parts[1]);
+            } catch (NumberFormatException e) {
+                System.out.println("Errore nel formato dell'indirizzo del peer ricevuto dall'aggregatore.");
+                break;
+            }
 
             System.out.println("Tentativo di download da " + rispostaAggregator + "...");
 

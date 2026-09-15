@@ -80,6 +80,19 @@ public class SensoreHandler implements Runnable {
                         }
                         break;
 
+                    case "LOG_DOWNLOAD":
+                        // Registra il completamento del download nel log dell'aggregatore
+                        // Sintassi: LOG_DOWNLOAD <NomeRisorsa> SUCCESSO
+                        if (token.length >= 2) {
+                            String risorsaScaricata = token[1];
+                            String ora = java.time.LocalTime.now().withNano(0).toString();
+                            String voceLog = ora + " - Risorsa " + risorsaScaricata + " scaricata con successo.";
+                            
+                            tabella.aggiungiLog(voceLog);
+                            out.println("OK LOG AGGIORNATO");
+                        }
+                        break;
+
                     case "QUIT":
                         // Il client comunica che si sta disconnettendo
                         out.println("BYE");

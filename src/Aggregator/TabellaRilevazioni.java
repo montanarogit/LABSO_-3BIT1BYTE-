@@ -67,20 +67,19 @@ public class TabellaRilevazioni {
         }
     }
 
-    // --- NUOVI METODI PER LA GESTIONE DEI LOG ---
+    // --- GESTIONE DEI LOG ---
 
-    // Metodo che risolve l'errore: restituisce la lista alla console
+    // Restituisce la lista dei log alla console
     public List<String> getRegistroLog() {
         lock.lock();
         try {
-            // Restituisce una copia per proteggere la lista originale
             return new ArrayList<>(registroLogs);
         } finally {
             lock.unlock();
         }
     }
 
-    // Metodo che registra un nuovo download
+    // Registra un nuovo download in modo thread-safe
     public void aggiungiLog(String messaggio) {
         lock.lock();
         try {
