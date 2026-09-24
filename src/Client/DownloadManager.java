@@ -82,6 +82,7 @@ public class DownloadManager {
                     
                     // Notifichiamo l'aggregatore per aggiornare il file di log 
                     outAggregator.println("LOG_DOWNLOAD " + nomeRisorsa + " " + rispostaAggregator + " " + mioIndirizzoP2P);
+                    inAggregator.readLine(); // Consuma l'OK dell'aggregatore
                     
                 } else {
                     // Il peer ha risposto ERROR_NOT_FOUND
@@ -100,6 +101,11 @@ public class DownloadManager {
     // Metodo helper per dire all'aggregatore di eliminare l'entry errata
     private void notificaFallimento(String nomeRisorsa, String peerFallito) {
         outAggregator.println("REMOVE_NODE_FOR " + nomeRisorsa + " " + peerFallito);
+        try {
+            inAggregator.readLine(); // <-- INSERIRE QUI
+        } catch (IOException e) {
+            System.err.println("Errore di lettura durante la notifica di fallimento: " + e.getMessage());
+        }
         System.out.println("Segnalazione inviata all'aggregatore. Ritento...");
     }
 }
