@@ -82,16 +82,25 @@ public class SensoreHandler implements Runnable {
 
                     case "LOG_DOWNLOAD":
                         // Registra il completamento del download nel log dell'aggregatore
-                        // Sintassi: LOG_DOWNLOAD <NomeRisorsa> SUCCESSO
-                        if (token.length >= 2) {
+                        // Nuova sintassi: LOG_DOWNLOAD <NomeRisorsa> <IP_Sorgente> <IP_Destinatario>
+                        if (token.length == 4) {
                             String risorsaScaricata = token[1];
-                            String ora = java.time.LocalTime.now().withNano(0).toString();
-                            String voceLog = ora + " - Risorsa " + risorsaScaricata + " scaricata con successo.";
+                            String ipSorgente = token[2];
+                            String ipDestinatario = token[3];
+                            
+                            // Formatta l'orario (es. 13:00) per rispecchiare l'esempio delle specifiche
+                            String ora = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+                            
+                            // Compone la stringa nel formato esatto richiesto
+                            String voceLog = ora + " " + risorsaScaricata + " da: " + ipSorgente + " a: " + ipDestinatario;
                             
                             tabella.aggiungiLog(voceLog);
                             out.println("OK LOG AGGIORNATO");
+                        } else {
+                            out.println("ERROR Formato log non valido");
                         }
                         break;
+
 
                     case "QUIT":
                         // Il client comunica che si sta disconnettendo

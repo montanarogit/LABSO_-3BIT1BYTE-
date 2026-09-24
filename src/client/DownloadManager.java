@@ -81,7 +81,7 @@ public class DownloadManager {
                     inAggregator.readLine(); // Consuma l'OK dell'aggregatore
                     
                     // Notifichiamo l'aggregatore per aggiornare il file di log 
-                    outAggregator.println("LOG_DOWNLOAD " + nomeRisorsa + " SUCCESSO");
+                    outAggregator.println("LOG_DOWNLOAD " + nomeRisorsa + " " + rispostaAggregator + " " + mioIndirizzoP2P);
                     
                 } else {
                     // Il peer ha risposto ERROR_NOT_FOUND
