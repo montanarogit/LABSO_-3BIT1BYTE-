@@ -1,4 +1,4 @@
-package Client;
+ package Client;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,27 +21,28 @@ public class DownloadManager {
     }
 
     public void eseguiDownload(String nomeRisorsa) throws IOException {
-        // Controllo preliminare: non scarichiamo se lo abbiamo già
-        if (archivio.possiedeRilevazione(nomeRisorsa)) {
-            System.out.println("Possiedi già la rilevazione in locale.");
-            return;
+        
+        //qui modifica
+        boolean giaPosseduta = archivio.possiedeRilevazione(nomeRisorsa);
+        if (giaPosseduta) {
+            System.out.println("Nota: Possiedi già la rilevazione '" + nomeRisorsa + "' in locale. Verrà sovrascritta al termine del download."); //permette di sovrascrivere risorse
         }
 
         boolean completato = false;
 
-        // Ciclo while che implementa il protocollo robusto di download
+        
         while (!completato) {
-            // 1. Chiediamo all'aggregatore a chi connetterci
+            
             outAggregator.println("GET_NODE_FOR " + nomeRisorsa);
             String rispostaAggregator = inAggregator.readLine();
 
             if (rispostaAggregator == null || rispostaAggregator.equals("NOT_FOUND")) {
-                // L'aggregatore non ha altri nodi da proporre
+                
                 System.out.println("Download fallito: La rilevazione non è disponibile sulla rete.");
                 break;
             }
 
-            // Controllo difensivo per evitare ArrayIndexOutOfBoundsException
+            
             String[] parts = rispostaAggregator.split(":");
             if (parts.length < 2) {
                 System.out.println("Download fallito: La rilevazione non è disponibile sulla rete.");
@@ -59,7 +60,7 @@ public class DownloadManager {
 
             System.out.println("Tentativo di download da " + rispostaAggregator + "...");
 
-            // 2. Proviamo a connetterci al peer suggerito
+            
             try (
                 Socket peerSocket = new Socket(ipPeer, portaPeer);
                 PrintWriter outPeer = new PrintWriter(peerSocket.getOutputStream(), true);
@@ -69,43 +70,44 @@ public class DownloadManager {
                 String esito = inPeer.readLine();
 
                 if ("OK".equals(esito)) {
-                    // 3. Successo! Leggiamo il contenuto e lo salviamo in archivio
+                    
                     String contenuto = inPeer.readLine();
+
+                    //modifica
+                    System.out.println("Valore appena scaricato da sovrascrivere: [" + contenuto + "]"); //dice con quale risorsa viene sovrascritta
+
                     archivio.aggiungiRilevazione(nomeRisorsa, contenuto);
                     completato = true;
                     
                     System.out.println("Download completato con successo!");
                     
-                    // Notifichiamo l'aggregatore che ora anche noi possediamo la risorsa
+                   
                     outAggregator.println("REGISTER " + nomeRisorsa + " " + mioIndirizzoP2P);
-                    inAggregator.readLine(); // Consuma l'OK dell'aggregatore
+                    inAggregator.readLine(); 
                     
                     // Notifichiamo l'aggregatore per aggiornare il file di log 
                     outAggregator.println("LOG_DOWNLOAD " + nomeRisorsa + " " + rispostaAggregator + " " + mioIndirizzoP2P);
-                    inAggregator.readLine(); // Consuma l'OK dell'aggregatore
-                    
+
+                    //modifica
+                    inAggregator.readLine();  //consuma i messaggi arretrati dell'aggregatore
+
                 } else {
-                    // Il peer ha risposto ERROR_NOT_FOUND
+                    
                     System.out.println("Il nodo contattato non possiede più la risorsa.");
                     notificaFallimento(nomeRisorsa, rispostaAggregator);
                 }
 
             } catch (IOException e) {
-                // Il peer è offline o irraggiungibile
+                
                 System.out.println("Errore di rete con il peer " + rispostaAggregator + ".");
                 notificaFallimento(nomeRisorsa, rispostaAggregator);
             }
         }
     }
 
-    // Metodo helper per dire all'aggregatore di eliminare l'entry errata
+    
     private void notificaFallimento(String nomeRisorsa, String peerFallito) {
         outAggregator.println("REMOVE_NODE_FOR " + nomeRisorsa + " " + peerFallito);
-        try {
-            inAggregator.readLine(); // <-- INSERIRE QUI
-        } catch (IOException e) {
-            System.err.println("Errore di lettura durante la notifica di fallimento: " + e.getMessage());
-        }
         System.out.println("Segnalazione inviata all'aggregatore. Ritento...");
     }
 }
